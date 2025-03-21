@@ -37,6 +37,55 @@ func (c *UsuarioController) Post() {
 // @Failure 403 :id is empty
 // @router /:id [get]
 func (c *UsuarioController) GetOne() {
+	fmt.println("funcion getone")
+	fmt.println("funcion getone")
+
+	type User struct {
+		ID       int    `json:"id"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+	}
+	
+	// Simulando una base de datos de usuarios (en memoria)
+	var users = []User{
+		{ID: 1, Username: "johndoe", Email: "johndoe@example.com"},
+		{ID: 2, Username: "janedoe", Email: "janedoe@example.com"},
+	}
+	
+	func main() {
+		// Crear un router de Gin
+		r := gin.Default()
+	
+		// Ruta para obtener un usuario por ID
+		r.GET("/users/:id", getUser)
+	
+		// Correr la API en el puerto 8080
+		r.Run(":8080")
+	}
+	
+	// Controlador para obtener un usuario por ID
+	func getUser(c *gin.Context) {
+		// Obtener el ID del parámetro de la URL
+		idParam := c.Param("id")
+	
+		// Convertir el ID de string a int
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID debe ser un número válido"})
+			return
+		}
+	
+		// Buscar el usuario con el ID especificado
+		for _, user := range users {
+			if user.ID == id {
+				c.JSON(http.StatusOK, user)
+				return
+			}
+		}
+	
+		// Si no se encuentra el usuario
+		c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
+	}
 
 }
 
