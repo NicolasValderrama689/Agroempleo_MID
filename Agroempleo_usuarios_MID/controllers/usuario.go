@@ -26,6 +26,40 @@ func (c *UsuarioController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *UsuarioController) Post() {
+	app.post('/api/usuarios', (req, res) => {
+		const { Nombre, Apellido, FechaNacimiento, CorreoElectronico, Ciudad, Departamento, Pais, Telefono, IdRolRol, IdIdentificacionIdentificacion, IdContraseñasContraseñas } = req.body;
+	
+		// Validaciones básicas
+		if (!Nombre || !Apellido || !FechaNacimiento || !CorreoElectronico || !Telefono) {
+			return res.status(400).json({ message: 'Faltan datos requeridos' });
+		}
+	
+		// Generando un nuevo Id (en un escenario real, esto debería ser generado por la base de datos)
+		const nuevoId = usuarios.length + 1;
+		const nuevoUsuario = {
+			Id: nuevoId,
+			Nombre,
+			Apellido,
+			FechaNacimiento,
+			CorreoElectronico,
+			Ciudad,
+			Departamento,
+			Pais,
+			Telefono,
+			FechaModificacion: new Date().toISOString(),
+			FechaCreacion: new Date().toISOString(),
+			Activo: true,  // Se puede poner como "true" por defecto
+			IdRolRol,
+			IdIdentificacionIdentificacion,
+			IdContraseñasContraseñas
+		};
+	
+		// Guardando el nuevo usuario (en este caso lo añadimos a la base de datos en memoria)
+		usuarios.push(nuevoUsuario);
+	
+		// Devolviendo el usuario creado con un estado 201
+		res.status(201).json(nuevoUsuario);
+	});
 
 }
 
