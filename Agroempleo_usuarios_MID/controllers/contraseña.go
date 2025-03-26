@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"your_project/models"
+
+	"github.com/sena_2824182/Agroempleo_MID/Agroempleo_usuarios_MID/models"
 
 	"github.com/astaxie/beego"
 	"github.com/gorilla/mux"
@@ -94,7 +95,6 @@ func (c *ContraseñaController) GetAll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(contraseñas)
 }
 
-
 // Put ...
 // @Title Put
 // @Description update the Contraseña
@@ -125,6 +125,7 @@ func (c *ContraseñaController) Put(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(contraseña)
 }
+
 // Delete ...
 // @Title Delete
 // @Description delete the Contraseña
