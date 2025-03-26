@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/astaxie/beego"
 )
 
@@ -26,6 +29,163 @@ func (c *UsuarioController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *UsuarioController) Post() {
+	var body_ingreso map[string]interface{}
+	var reponseUsuario, responseCredencial, responseRolUsuario []byte
+
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &body_ingreso); err == nil {
+		fmt.Println("Body que ingresa", body_ingreso)
+
+		jsonData, err := json.MarshalIndent(body_ingreso, "", " ")
+		if err != nil {
+			fmt.Println("Error al convertir a JSON", err)
+		}
+		fmt.Println("Body de ingreso en JSON:", string(jsonData))
+
+		passStr, _ := body_ingreso["contraseña"].(string)
+
+		// Hashear la contraseña
+		hashedPass, err := services.HashContraseña(passStr)
+		if err != nil {
+			fmt.Println(err)
+			c.Data["json"] = map[string]interface{}{"error": "Error interno al procesar la contraseña"}
+			c.ServeJSON()
+			return
+		}
+
+		jsonCredencial := map[string]interface{}{
+			"contraseña": hashedPass,
+		}
+		fmt.Println("este es el json para credenciales: ", jsonCredencial)
+
+		jsonUsuario := map[string]interface{}{
+			"nombre":             body_ingreso["Nombre"],
+			"apellido":           body_ingreso["Apellido"],
+			"contacto":           body_ingreso["Contacto"],
+			"correo_electronico": body_ingreso["CorreoElectronico"],
+		}
+		fmt.Println("este es el json usuario: ", jsonUsuario)
+
+		json_credencial_byte, _ := json.Marshal(jsonCredencial)
+		// json_usuario_byte, _ := json.Marshal(jsonUsuario)
+
+		fmt.Println("json credencial: ", string(json_credencial_byte))
+		responseCredencial, _ = services.Metodo_post("API_CRUD", "/v1/Credenciales", json_credencial_byte)
+		if err != nil {
+			fmt.Println("Error al crear credenciales:", err)
+			return
+		}
+		fmt.Println("Respuesta de la API (Credenciales): ", string(responseCredencial))
+
+		// Obtener el ID de credencial creada
+		var credencialresponse map[string]interface{}
+		if err := json.Unmarshal(responseCredencial, &credencialresponse); err != nil {
+			fmt.Println("Error al parsear respuesta de credenciales:", err)
+			return
+		}
+
+		// Extraer el ID de la credencial
+		var credencialID float64
+		if data, ok := credencialresponse["Data"].(map[string]interface{}); ok {
+			if id, exists := data["Id"].(float64); exists {
+				credencialID = id
+			} else {
+				fmt.Println("Error: No se encontró el ID en la respuesta de Credenciales")
+				return
+			}
+		} else {
+			fmt.Println("Error: Estructura de respuesta de credenciales no válida")
+			return
+		}
+		fmt.Println("Id de credenciales: ", credencialID)
+
+		// Crear JSON para Usuario con fk_credencial
+		jsonUsuario = map[string]interface{}{
+			"Nombre":            body_ingreso["Nombre"],
+			"Apellido":          body_ingreso["Apellido"],
+			"Contacto":          body_ingreso["Contacto"],
+			"CorreoElectronico": body_ingreso["CorreoElectronico"],
+			"FkCredencial": map[string]interface{}{
+				"Id": credencialID,
+			},
+		}
+
+		// Convertir a JSON y enviar POST a /v1/Usuario
+		json_usuario_byte, _ := json.Marshal(jsonUsuario)
+		fmt.Println("Enviando JSON a /v1/Usuario:", string(json_usuario_byte))
+		reponseUsuario, err = services.Metodo_post("API_CRUD", "/v1/Usuario", json_usuario_byte)
+		if err != nil {
+			fmt.Println(" Error al crear usuario:", err)
+			return
+		}
+
+		fmt.Println("Respuesta de la API (Usuario):", string(reponseUsuario))
+
+		// Extraer el ID del usuario creado
+		var usuarioResponse map[string]interface{}
+		if err := json.Unmarshal(reponseUsuario, &usuarioResponse); err != nil {
+			fmt.Println("Error al parsear respuesta de usuario:", err)
+			return
+		}
+
+		var usuarioID float64
+		if data, ok := usuarioResponse["Data"].(map[string]interface{}); ok {
+			if id, exists := data["Id"].(float64); exists {
+				usuarioID = id
+			} else {
+				fmt.Println("Error: No se encontró el ID en la respuesta de Usuario")
+				return
+			}
+		} else {
+			fmt.Println("Error: Estructura de respuesta de usuario no válida")
+			return
+		}
+
+		// Buscar el ID del Rol en la tabla Roles
+		rolNombre := body_ingreso["rol"].(string) // Extrae el rol enviado en la solicitud
+		var responseRol []byte
+		responseRol, err = services.Metodo_get("API_CRUD", "/v1/Roles?query=nombre:", rolNombre)
+
+		if err != nil {
+			fmt.Println("Error al obtener el rol:", err)
+			return
+		}
+
+		var rolResponse map[string]interface{}
+		if err := json.Unmarshal(responseRol, &rolResponse); err != nil {
+			fmt.Println("Error al parsear respuesta de roles:", err)
+			return
+		}
+
+		var rolID float64
+		if roles, ok := rolResponse["Data"].([]interface{}); ok && len(roles) > 0 {
+			if rolData, exists := roles[0].(map[string]interface{}); exists {
+				rolID = rolData["Id"].(float64)
+			}
+		} else {
+			fmt.Println("Error: No se encontró el rol en la base de datos")
+			return
+		}
+
+		// Crear registro en RolesUsuario
+		jsonRolUsuario := map[string]interface{}{
+			"FkUsuarioRoles": map[string]interface{}{
+				"Id": usuarioID,
+			},
+			"FkRolesUsuario": map[string]interface{}{
+				"Id": rolID,
+			},
+		}
+
+		json_rol_usuario_byte, _ := json.Marshal(jsonRolUsuario)
+		responseRolUsuario, _ = services.Metodo_post("API_CRUD", "/v1/Roles_Usuario", json_rol_usuario_byte)
+
+		fmt.Println("Respuesta de la API (RolesUsuario):", string(responseRolUsuario))
+	}
+
+	c.Data["json"] = map[string]interface{}{
+		"Message": "¡Usuario creado exitosamente!",
+	}
+	c.ServeJSON()
 
 }
 

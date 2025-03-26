@@ -1,4 +1,4 @@
-module github.com/sena_2824182/Agroempleo_MID/Agroempleo_usuarios_MID
+module github.com/sena_2824182/Agroempleo_MID
 
 go 1.23.1
 
