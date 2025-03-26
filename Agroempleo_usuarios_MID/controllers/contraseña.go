@@ -94,6 +94,7 @@ func (c *ContraseñaController) GetAll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(contraseñas)
 }
 
+
 // Put ...
 // @Title Put
 // @Description update the Contraseña
@@ -124,7 +125,6 @@ func (c *ContraseñaController) Put(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(contraseña)
 }
-
 // Delete ...
 // @Title Delete
 // @Description delete the Contraseña

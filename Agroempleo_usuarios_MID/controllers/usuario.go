@@ -29,6 +29,7 @@ func (c *UsuarioController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *UsuarioController) Post() {
+<<<<<<< HEAD
 	var body_ingreso map[string]interface{}
 	var reponseUsuario, responseCredencial, responseRolUsuario []byte
 
@@ -186,6 +187,42 @@ func (c *UsuarioController) Post() {
 		"Message": "¡Usuario creado exitosamente!",
 	}
 	c.ServeJSON()
+=======
+	app.post('/api/usuarios', (req, res) => {
+		const { Nombre, Apellido, FechaNacimiento, CorreoElectronico, Ciudad, Departamento, Pais, Telefono, IdRolRol, IdIdentificacionIdentificacion, IdContraseñasContraseñas } = req.body;
+	
+		// Validaciones básicas
+		if (!Nombre || !Apellido || !FechaNacimiento || !CorreoElectronico || !Telefono) {
+			return res.status(400).json({ message: 'Faltan datos requeridos' });
+		}
+	
+		// Generando un nuevo Id (en un escenario real, esto debería ser generado por la base de datos)
+		const nuevoId = usuarios.length + 1;
+		const nuevoUsuario = {
+			Id: nuevoId,
+			Nombre,
+			Apellido,
+			FechaNacimiento,
+			CorreoElectronico,
+			Ciudad,
+			Departamento,
+			Pais,
+			Telefono,
+			FechaModificacion: new Date().toISOString(),
+			FechaCreacion: new Date().toISOString(),
+			Activo: true,  // Se puede poner como "true" por defecto
+			IdRolRol,
+			IdIdentificacionIdentificacion,
+			IdContraseñasContraseñas
+		};
+	
+		// Guardando el nuevo usuario (en este caso lo añadimos a la base de datos en memoria)
+		usuarios.push(nuevoUsuario);
+	
+		// Devolviendo el usuario creado con un estado 201
+		res.status(201).json(nuevoUsuario);
+	});
+>>>>>>> 854503d385002be75c809a9599f40e7077e42faf
 
 }
 
@@ -197,6 +234,55 @@ func (c *UsuarioController) Post() {
 // @Failure 403 :id is empty
 // @router /:id [get]
 func (c *UsuarioController) GetOne() {
+	fmt.println("funcion getone")
+	fmt.println("funcion getone")
+
+	type User struct {
+		ID       int    `json:"id"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+	}
+	
+	// Simulando una base de datos de usuarios (en memoria)
+	var users = []User{
+		{ID: 1, Username: "johndoe", Email: "johndoe@example.com"},
+		{ID: 2, Username: "janedoe", Email: "janedoe@example.com"},
+	}
+	
+	func main() {
+		// Crear un router de Gin
+		r := gin.Default()
+	
+		// Ruta para obtener un usuario por ID
+		r.GET("/users/:id", getUser)
+	
+		// Correr la API en el puerto 8080
+		r.Run(":8080")
+	}
+	
+	// Controlador para obtener un usuario por ID
+	func getUser(c *gin.Context) {
+		// Obtener el ID del parámetro de la URL
+		idParam := c.Param("id")
+	
+		// Convertir el ID de string a int
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID debe ser un número válido"})
+			return
+		}
+	
+		// Buscar el usuario con el ID especificado
+		for _, user := range users {
+			if user.ID == id {
+				c.JSON(http.StatusOK, user)
+				return
+			}
+		}
+	
+		// Si no se encuentra el usuario
+		c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
+	}
 
 }
 
