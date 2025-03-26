@@ -1,7 +1,15 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/astaxie/beego"
+	"github.com/sena_2824182/Agroempleo_MID/Agroempleo_usuarios_MID/models"
+	"github.com/sena_2824182/Agroempleo_MID/Agroempleo_usuarios_MID/services"
 )
 
 // UsuarioController operations for Usuario
@@ -20,46 +28,66 @@ func (c *UsuarioController) URLMapping() {
 
 // Post ...
 // @Title Create
-// @Description create Usuario
-// @Param	body		body 	models.Usuario	true		"body for Usuario content"
-// @Success 201 {object} models.Usuario
-// @Failure 403 body is empty
+// @Description create Usuarios
+// @Param	body		body 	models.Usuarios	true		"body for Usuarios content"
+// @Success 201 {object} models.Usuarios
+// @Failure 400 Bad Request
+// @Failure 500 Internal Server Error
 // @router / [post]
 func (c *UsuarioController) Post() {
-	app.post('/api/usuarios', (req, res) => {
-		const { Nombre, Apellido, FechaNacimiento, CorreoElectronico, Ciudad, Departamento, Pais, Telefono, IdRolRol, IdIdentificacionIdentificacion, IdContraseñasContraseñas } = req.body;
-	
-		// Validaciones básicas
-		if (!Nombre || !Apellido || !FechaNacimiento || !CorreoElectronico || !Telefono) {
-			return res.status(400).json({ message: 'Faltan datos requeridos' });
+
+	var usuario models.Usuarios
+
+	// Decodificar el JSON recibido
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &usuario); err != nil {
+		c.Ctx.Output.SetStatus(400)
+		c.Data["json"] = map[string]interface{}{
+			"success": false,
+			"status":  400,
+			"message": "Error en el formato de entrada: " + err.Error(),
 		}
-	
-		// Generando un nuevo Id (en un escenario real, esto debería ser generado por la base de datos)
-		const nuevoId = usuarios.length + 1;
-		const nuevoUsuario = {
-			Id: nuevoId,
-			Nombre,
-			Apellido,
-			FechaNacimiento,
-			CorreoElectronico,
-			Ciudad,
-			Departamento,
-			Pais,
-			Telefono,
-			FechaModificacion: new Date().toISOString(),
-			FechaCreacion: new Date().toISOString(),
-			Activo: true,  // Se puede poner como "true" por defecto
-			IdRolRol,
-			IdIdentificacionIdentificacion,
-			IdContraseñasContraseñas
-		};
-	
-		// Guardando el nuevo usuario (en este caso lo añadimos a la base de datos en memoria)
-		usuarios.push(nuevoUsuario);
-	
-		// Devolviendo el usuario creado con un estado 201
-		res.status(201).json(nuevoUsuario);
-	});
+		c.ServeJSON()
+		return
+	}
+
+	// Validar que los campos esenciales no estén vacíos
+	if usuario.Nombre == "" || usuario.CorreoElectronico == "" || usuario.IdIdentificacionIdentificacion == nil || usuario.IdRolRol == nil {
+		c.Ctx.Output.SetStatus(400)
+		c.Data["json"] = map[string]interface{}{
+			"success": false,
+			"status":  400,
+			"message": "Faltan campos obligatorios: Nombre, Correo, Cedula y Rol.",
+		}
+		c.ServeJSON()
+		return
+	}
+
+	// Convertir a JSON para enviar al CRUD local
+	jsonData, err := json.Marshal(usuario)
+	if err != nil {
+		c.Ctx.Output.SetStatus(500)
+		c.Data["json"] = map[string]interface{}{
+			"success": false,
+			"status":  500,
+			"message": "Error al codificar usuario: " + err.Error(),
+		}
+		c.ServeJSON()
+		return
+	}
+
+	// Hacer la solicitud HTTP POST al CRUD local
+	resp, err := http.Post("http://localhost:8080/v1/Usuarios", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		c.Ctx.Output.SetStatus(500)
+		c.Data["json"] = map[string]interface{}{
+			"success": false,
+			"status":  500,
+			"message": "Error al comunicarse con el CRUD local: " + err.Error(),
+		}
+		c.ServeJSON()
+		return
+	}
+	defer resp.Body.Close()
 
 }
 
@@ -71,55 +99,6 @@ func (c *UsuarioController) Post() {
 // @Failure 403 :id is empty
 // @router /:id [get]
 func (c *UsuarioController) GetOne() {
-	fmt.println("funcion getone")
-	fmt.println("funcion getone")
-
-	type User struct {
-		ID       int    `json:"id"`
-		Username string `json:"username"`
-		Email    string `json:"email"`
-	}
-	
-	// Simulando una base de datos de usuarios (en memoria)
-	var users = []User{
-		{ID: 1, Username: "johndoe", Email: "johndoe@example.com"},
-		{ID: 2, Username: "janedoe", Email: "janedoe@example.com"},
-	}
-	
-	func main() {
-		// Crear un router de Gin
-		r := gin.Default()
-	
-		// Ruta para obtener un usuario por ID
-		r.GET("/users/:id", getUser)
-	
-		// Correr la API en el puerto 8080
-		r.Run(":8080")
-	}
-	
-	// Controlador para obtener un usuario por ID
-	func getUser(c *gin.Context) {
-		// Obtener el ID del parámetro de la URL
-		idParam := c.Param("id")
-	
-		// Convertir el ID de string a int
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "ID debe ser un número válido"})
-			return
-		}
-	
-		// Buscar el usuario con el ID especificado
-		for _, user := range users {
-			if user.ID == id {
-				c.JSON(http.StatusOK, user)
-				return
-			}
-		}
-	
-		// Si no se encuentra el usuario
-		c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
-	}
 
 }
 
@@ -160,4 +139,31 @@ func (c *UsuarioController) Put() {
 // @router /:id [delete]
 func (c *UsuarioController) Delete() {
 
+	idUsuario, err := strconv.Atoi(c.Ctx.Input.Param(":id"))
+	if err != nil {
+		c.Data["json"] = map[string]interface{}{
+			"success": false,
+			"message": "ID de usuario inválido",
+			"error":   err.Error(),
+		}
+		c.ServeJSON()
+		return
+	}
+
+	// Llamamos al servicio de autoeliminación
+	err = services.AutoEliminarUsuario(idUsuario)
+	if err != nil {
+		c.Data["json"] = map[string]interface{}{
+			"success": false,
+			"message": "Error al eliminar la cuenta",
+			"error":   err.Error(),
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{
+			"success": true,
+			"message": fmt.Sprintf("La cuenta con ID %d ha sido eliminada correctamente", idUsuario),
+		}
+	}
+
+	c.ServeJSON()
 }
