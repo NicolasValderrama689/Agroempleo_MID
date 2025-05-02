@@ -10,7 +10,6 @@ import (
 
 	"github.com/astaxie/beego"
 )
-
 func Metodo_get_all(host, endpoint  string) ([]byte, error) {
 	url := beego.AppConfig.String(host) + endpoint
 	resp, err := http.Get(url)
@@ -24,6 +23,21 @@ func Metodo_get_all(host, endpoint  string) ([]byte, error) {
 	}
 	return body, nil
 }
+
+func Metodo_getid(host, endpoint  string) ([]byte, error) {
+	url := beego.AppConfig.String(host) + endpoint
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return body, nil
+}
+
 
 func ProcessarJsonArreglos(datos []byte) ([]map[string]interface{}, error) {
 	var result []map[string]interface{}

@@ -60,39 +60,55 @@ func (c *VacantesController) GetOne() {
 func (c *VacantesController) GetAll() {
 	fmt.Println("metodo Get all")
 	Json_vacantes, _ := services.Metodo_get_all("host_api", "Vacantes")
-	//fmt.Println("Este es el valor de Json_vacante en byte", Json_vacantes)
+	Json_vacantes2, _ := services.Metodo_get_all("host_api2", "Usuarios")
+
+	fmt.Println("Este es el valor de Json_vacante2 en byte", Json_vacantes2)
 	Json_procesado_vacantes, _ := services.ProcessarJson(Json_vacantes)
-	//fmt.Println("Este es el valor de Json_vacante en json", Json_procesado_vacantes)
+	Json_procesado_vacantes2, _ := services.ProcessarJson(Json_vacantes2)
+
+	//fmt.Println("Este es el valor de Json_vacante2 en json", Json_procesado_vacantes2)
 
 	Vacantes_json := Json_procesado_vacantes["Consulta de id"]
+	Vacantes_json1 := Json_procesado_vacantes2["usuarios consultados"]
 
-	Arreglo_Map_Vacantes ,_ := services.ConvertInterfaceToSliceMap(Vacantes_json)
-	
+	Arreglo_Map_Vacantes_final, _ := services.ConvertInterfaceToSliceMap(Vacantes_json)
+	Arreglo_Map_Usuario1, _ := services.ConvertInterfaceToSliceMap(Vacantes_json1)
+	fmt.Println("usuarios basedata", Arreglo_Map_Usuario1[0]["Nombre"])
+
+	// Arreglo_Map_Vacantes_final := append(Arreglo_Map_Vacantes, Arreglo_Map_Usuario1...)
 
 	var Resultado_total []map[string]interface{}
+	for i := range Arreglo_Map_Vacantes_final {
 
-	for i := range Arreglo_Map_Vacantes{
+		fmt.Println("valor de json solo", Arreglo_Map_Vacantes_final[i])
+		usuarioID := Arreglo_Map_Vacantes_final[i]["Id_usuarios"]
+		usuarioID_string := fmt.Sprintf("%v", usuarioID)
 
-		fmt.Println("valor de json solo", Arreglo_Map_Vacantes[i])
+		url := "http://localhost:8080/v1/Usuarios/"
+
+
+		final,_ := services.Metodo_getid(url, usuarioID_string)
+		Json_usuario, _ := services.ProcessarJson(final)
+		Arreglo_Map_Usuario, _ := services.ConvertInterfaceToSliceMap(Json_usuario)
+		fmt.Println("usuario",Arreglo_Map_Usuario)
+		
 
 		Resultado_parcial := map[string]interface{}{
-		 	"TituloPuesto": Arreglo_Map_Vacantes[i]["TituloPuesto"],
-		 	"DescripcionTrabajo":Arreglo_Map_Vacantes[i]["DescripcionTrabajo"],
-			"Cargo": Arreglo_Map_Vacantes[i]["Cargo"],
-			"Salario": Arreglo_Map_Vacantes[i]["Salario"],
-			"Horario": Arreglo_Map_Vacantes[i]["Horario"],
-			"Modalidad": Arreglo_Map_Vacantes[i]["Modalidad"],
-			"NivelRequerido": Arreglo_Map_Vacantes[i]["NivelRequerido"],
-			"ExperienciaRequrida": Arreglo_Map_Vacantes[i]["ExperienciaRequrida"],
-			"NumeroVacantes": Arreglo_Map_Vacantes[i]["NumeroVacantes"],
-			"Activo": Arreglo_Map_Vacantes[i]["Activo"],
-			"TipoEmpleo": Arreglo_Map_Vacantes[i]["IdtipoempleoTipodeempleo"].(map[string]interface{})["Nombre"],
-			"Ciudad": Arreglo_Map_Vacantes[i]["Idciudadtrabajociudad"].(map[string]interface{})["Nombre"],
+			"TituloPuesto":        Arreglo_Map_Vacantes_final[i]["TituloPuesto"],
+			"DescripcionTrabajo":  Arreglo_Map_Vacantes_final[i]["DescripcionTrabajo"],
+			"Cargo":               Arreglo_Map_Vacantes_final[i]["Cargo"],
+			"Salario":             Arreglo_Map_Vacantes_final[i]["Salario"],
+			"Horario":             Arreglo_Map_Vacantes_final[i]["Horario"],
+			"Modalidad":           Arreglo_Map_Vacantes_final[i]["Modalidad"],
+			"NivelRequerido":      Arreglo_Map_Vacantes_final[i]["NivelRequerido"],
+			"ExperienciaRequrida": Arreglo_Map_Vacantes_final[i]["ExperienciaRequrida"],
+			"NumeroVacantes":      Arreglo_Map_Vacantes_final[i]["NumeroVacantes"],
+			"Activo":              Arreglo_Map_Vacantes_final[i]["Activo"],
+			"TipoEmpleo":          Arreglo_Map_Vacantes_final[i]["IdtipoempleoTipodeempleo"].(map[string]interface{})["Nombre"],
+			"Ciudad":              Arreglo_Map_Vacantes_final[i]["Idciudadtrabajociudad"].(map[string]interface{})["Nombre"],
+			"publicado_por":       Arreglo_Map_Vacantes_final[i]["Id_usuarios"],
 		}
-
-		Resultado_total= append(Resultado_total, Resultado_parcial)
-
-
+		Resultado_total = append(Resultado_total, Resultado_parcial)
 
 	}
 
