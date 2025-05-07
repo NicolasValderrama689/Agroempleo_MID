@@ -20,9 +20,9 @@ func init() {
 				&controllers.VacantesController{},
 			),
 		),
-		beego.NSNamespace("/ciudad",
+		beego.NSNamespace("/registro",
 			beego.NSInclude(
-				&controllers.CiudadController{},
+				&controllers.RegistroController{},
 			),
 		),
 		

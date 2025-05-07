@@ -60,37 +60,37 @@ func (c *VacantesController) GetOne() {
 func (c *VacantesController) GetAll() {
 	fmt.Println("metodo Get all")
 	Json_vacantes, _ := services.Metodo_get_all("host_api", "Vacantes")
-	Json_vacantes2, _ := services.Metodo_get_all("host_api2", "Usuarios")
 
-	fmt.Println("Este es el valor de Json_vacante2 en byte", Json_vacantes2)
+	//fmt.Println("Este es el valor de Json_vacante2 en byte", Json_vacantes2)
 	Json_procesado_vacantes, _ := services.ProcessarJson(Json_vacantes)
-	Json_procesado_vacantes2, _ := services.ProcessarJson(Json_vacantes2)
 
-	//fmt.Println("Este es el valor de Json_vacante2 en json", Json_procesado_vacantes2)
 
 	Vacantes_json := Json_procesado_vacantes["Consulta de id"]
-	Vacantes_json1 := Json_procesado_vacantes2["usuarios consultados"]
 
 	Arreglo_Map_Vacantes_final, _ := services.ConvertInterfaceToSliceMap(Vacantes_json)
-	Arreglo_Map_Usuario1, _ := services.ConvertInterfaceToSliceMap(Vacantes_json1)
-	fmt.Println("usuarios basedata", Arreglo_Map_Usuario1[0]["Nombre"])
 
-	// Arreglo_Map_Vacantes_final := append(Arreglo_Map_Vacantes, Arreglo_Map_Usuario1...)
 
+	
+		
 	var Resultado_total []map[string]interface{}
+
 	for i := range Arreglo_Map_Vacantes_final {
 
-		fmt.Println("valor de json solo", Arreglo_Map_Vacantes_final[i])
 		usuarioID := Arreglo_Map_Vacantes_final[i]["Id_usuarios"]
 		usuarioID_string := fmt.Sprintf("%v", usuarioID)
+		fmt.Println("usuarioID", usuarioID_string)
 
-		url := "http://localhost:8080/v1/Usuarios/"
+		endpoint := "Usuarios/"+ usuarioID_string
+	
 
-
-		final,_ := services.Metodo_getid(url, usuarioID_string)
+		final,_ := services.Metodo_getid("host_api2", endpoint)
+		fmt.Println("final",final)
 		Json_usuario, _ := services.ProcessarJson(final)
-		Arreglo_Map_Usuario, _ := services.ConvertInterfaceToSliceMap(Json_usuario)
-		fmt.Println("usuario",Arreglo_Map_Usuario)
+		nombre_usuario := Json_usuario["Consulta de id"].(map[string]interface{})["Nombre"]
+		fmt.Println("nombre_usuario",nombre_usuario)
+
+		fmt.Println("valor de json solo", Arreglo_Map_Vacantes_final[i])
+		
 		
 
 		Resultado_parcial := map[string]interface{}{
@@ -106,7 +106,7 @@ func (c *VacantesController) GetAll() {
 			"Activo":              Arreglo_Map_Vacantes_final[i]["Activo"],
 			"TipoEmpleo":          Arreglo_Map_Vacantes_final[i]["IdtipoempleoTipodeempleo"].(map[string]interface{})["Nombre"],
 			"Ciudad":              Arreglo_Map_Vacantes_final[i]["Idciudadtrabajociudad"].(map[string]interface{})["Nombre"],
-			"publicado_por":       Arreglo_Map_Vacantes_final[i]["Id_usuarios"],
+			"publicado_por": nombre_usuario,
 		}
 		Resultado_total = append(Resultado_total, Resultado_parcial)
 
