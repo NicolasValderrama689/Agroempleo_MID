@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	
+
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -61,9 +63,17 @@ func (c *RegistroController) Post() {
 	mestring, _ := json.Marshal(body_ingresa["mes"])
 	aniotring, _ := json.Marshal(body_ingresa["anio"])
 
+
 	var fecha_nacimiento = string(diastring) + "/" + string(mestring) + "/" + string(aniotring)
 
 	fmt.Println("fecha", fecha_nacimiento)
+
+	diastring1, _ := json.Marshal(body_ingresa["pais"])
+	mestring1, _ := json.Marshal(body_ingresa["departamento"])
+	aniotring1, _ := json.Marshal(body_ingresa["ciudad"])
+
+	var ubicacion = string(diastring1) + "/" + string(mestring1) + "/" + string(aniotring1)
+	fmt.Println("ubicacion", ubicacion)
 
 	id_contrasena := response_json_contrasena["Datos creados con id"].(map[string]interface{})["Id"]
 	id_tipo_documento := body_ingresa["tipoDocumento"]
@@ -84,6 +94,7 @@ func (c *RegistroController) Post() {
 		"Contraseña":        map[string]interface{}{"id": id_contrasena},
 		"IdTipoDocumento":   map[string]interface{}{"id": id_tipo_documento_int},
 		"IdTipoUsuario":     map[string]interface{}{"id": id_tipo_usuario_int},
+		"Ubicacion":         ubicacion,
 	}
 	bytes_usuario, err := json.Marshal(body_Usuario)
 	if err != nil {
