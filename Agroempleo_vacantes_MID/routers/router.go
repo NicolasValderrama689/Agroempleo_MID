@@ -25,7 +25,11 @@ func init() {
 				&controllers.RegistroController{},
 			),
 		),
-		
+		beego.NSNamespace("/perfil",
+			beego.NSInclude(
+				&controllers.PerfilController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
