@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/astaxie/beego"
 	"github.com/sena_2824182/Agroempleo_MID/Agroempleo_vacantes_MID/services"
@@ -37,86 +38,86 @@ func (c *RegistroController) Post() {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &body_ingresa); err == nil {
 		fmt.Println("json ingresa", body_ingresa)
 	}
-    fmt.Println("body",body_ingresa["contrasena"])
+	fmt.Println("body", body_ingresa["contrasena"])
 	body_contrasena := map[string]interface{}{
 		"Contraseña": body_ingresa["contrasena"],
 	}
-	
-    fmt.Println("body contraseña",body_contrasena)
+
+	fmt.Println("body contraseña", body_contrasena)
 
 	bytes_contrasena, err := json.Marshal(body_contrasena)
 	if err != nil {
 		fmt.Println("Error al convertir:", err)
 		return
 	}
- 
+
 	body_response_contrasena_byte, _ := services.Metodo_post("host_api2", "contrasenas", bytes_contrasena)
 
 	var response_json_contrasena map[string]interface{}
-fmt.Println("byte_contraseña",string(body_response_contrasena_byte))
+	fmt.Println("byte_contraseña", string(body_response_contrasena_byte))
 	err1 := json.Unmarshal(body_response_contrasena_byte, &response_json_contrasena)
 	if err1 != nil {
 		fmt.Println("Error al deserializar:", err)
 		return
 	}
-	fmt.Println("body_contraseña",response_json_contrasena)
-	// diastring, _ := json.Marshal(body_ingresa["dia"])
-	// mestring, _ := json.Marshal(body_ingresa["mes"])
-	// aniotring, _ := json.Marshal(body_ingresa["anio"])
+	fmt.Println("body_contraseña", response_json_contrasena)
+	diastring, _ := json.Marshal(body_ingresa["dia"])
+	mestring, _ := json.Marshal(body_ingresa["mes"])
+	aniotring, _ := json.Marshal(body_ingresa["anio"])
 
-	// var fecha_nacimiento = string(diastring) + "/" + string(mestring) + "/" + string(aniotring)
+	var fecha_nacimiento = string(diastring) + "/" + string(mestring) + "/" + string(aniotring)
 
-	// fmt.Println("fecha", fecha_nacimiento)
+	fmt.Println("fecha", fecha_nacimiento)
 
-	// diastring1, _ := json.Marshal(body_ingresa["pais"])
-	// mestring1, _ := json.Marshal(body_ingresa["departamento"])
-	// aniotring1, _ := json.Marshal(body_ingresa["ciudad"])
+	id_contrasena := response_json_contrasena["Id"]
+	id_tipo_documento := body_ingresa["tipoDocumento"]
+	id_tipo_documento_string := fmt.Sprintf("%v", id_tipo_documento)
+	id_tipo_documento_int, _ := strconv.Atoi(id_tipo_documento_string)
+	id_tipo_usuario := body_ingresa["tipoUsuario"]
+	id_tipo_usuario_string := fmt.Sprintf("%v", id_tipo_usuario)
+	id_tipo_usuario_int, _ := strconv.Atoi(id_tipo_usuario_string)
+	id_contraseña_string := fmt.Sprintf("%v", id_contrasena)
+	id_contraseña_int, _ := strconv.Atoi(id_contraseña_string)
 
-	// var ubicacion = string(diastring1) + "/" + string(mestring1) + "/" + string(aniotring1)
-	// fmt.Println("ubicacion", ubicacion)
+	fmt.Println("id contraseña", id_contrasena)
 
-	// id_contrasena := response_json_contrasena["Datos creados con id"].(map[string]interface{})["Id"]
-	// id_tipo_documento := body_ingresa["tipoDocumento"]
-	// id_tipo_documento_string := fmt.Sprintf("%v", id_tipo_documento)
-	// id_tipo_documento_int, _ := strconv.Atoi(id_tipo_documento_string)
-	// id_tipo_usuario := body_ingresa["tipoUsuario"]
-	// id_tipo_usuario_string := fmt.Sprintf("%v", id_tipo_usuario)
-	// id_tipo_usuario_int, _ := strconv.Atoi(id_tipo_usuario_string)
+	body_Usuario := map[string]interface{}{
+		"Nombre":                       body_ingresa["nombre"],
+		"Apellido":                     body_ingresa["apellido"],
+		"FechaNacimiento":              fecha_nacimiento,
+		"NDocumento":                   body_ingresa["numeroDocumento"],
+		"CorreoElectronico":            body_ingresa["correo_electronico"],
+		"IdContraseñasContraseñas":     map[string]interface{}{"Id": id_contraseña_int},
+		"IdTipoDocumentoTipoDocumento": map[string]interface{}{"Id": id_tipo_documento_int},
+		"IdRolRol":                     map[string]interface{}{"id": id_tipo_usuario_int},
+		"Pais":                         body_ingresa["pais"],
+		"Departamento":                 body_ingresa["departamento"],
+		"Ciudad":                       body_ingresa["ciudad"],
+		"Telefono":                     (body_ingresa["celular"]).(string),
+	}
+	fmt.Println("body usuario", body_Usuario)
 
-	// fmt.Println("id contraseña", id_contrasena)
+	bytes_usuario, err := json.Marshal(body_Usuario)
+	if err != nil {
+		fmt.Println("Error al convertir:", err)
+		return
+	}
 
-	// body_Usuario := map[string]interface{}{
-	// 	"Nombre":            body_ingresa["nombre"],
-	// 	"Apellido":          body_ingresa["apellido"],
-	// 	"FNacimiento":       fecha_nacimiento,
-	// 	"NDocumento":        body_ingresa["numeroDocumento"],
-	// 	"CorreoElectronico": body_ingresa["correo_electronico"],
-	// 	"Contraseña":        map[string]interface{}{"id": id_contrasena},
-	// 	"IdTipoDocumento":   map[string]interface{}{"id": id_tipo_documento_int},
-	// 	"IdTipoUsuario":     map[string]interface{}{"id": id_tipo_usuario_int},
-	// 	"Ubicacion":         ubicacion,
-	// }
-	// bytes_usuario, err := json.Marshal(body_Usuario)
-	// if err != nil {
-	// 	fmt.Println("Error al convertir:", err)
-	// 	return
-	// }
+	body_response_usuario_byte, _ := services.Metodo_post("host_api2", "Usuarios", bytes_usuario)
 
-	// body_response_usuario_byte, _ := services.Metodo_post("host_api2", "Usuarios", bytes_usuario)
+	var response_json_usuario map[string]interface{}
 
-	// var response_json_usuario map[string]interface{}
-
-	// err2 := json.Unmarshal(body_response_usuario_byte, &response_json_usuario)
-	// if err2 != nil {
-	// 	fmt.Println("Error al deserializar:", err)
-	// 	return
-	// }
+	err2 := json.Unmarshal(body_response_usuario_byte, &response_json_usuario)
+	if err2 != nil {
+		fmt.Println("Error al deserializar:", err)
+		return
+	}
 
 	c.Data["json"] = map[string]interface{}{
 		"Succes":  true,
 		"Status":  200,
 		"Message": "Creación existosa",
-		"Data":    body_ingresa,
+		"Data":    response_json_usuario,
 	}
 	c.ServeJSON()
 }
