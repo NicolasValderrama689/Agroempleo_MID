@@ -56,64 +56,47 @@ func (c *PerfilController) GetOne() {
 // @Failure 403
 // @router / [get]
 func (c *PerfilController) GetAll() {
-	json_perfil, _ := services.Metodo_get_all("host_api2", "Usuarios/")
-	Json_perfil1, _ := services.ProcessarJson(json_perfil)
-
-	perfil_json := Json_perfil1["Consulta de id"]
-
-	arreglo_perfil, _ := services.ConvertInterfaceToSliceMap(perfil_json)
-
-	var Perfil_total []map[string]interface{}
-
-	for i := range arreglo_perfil {
-
-		Perfil_parcial := map[string]interface{}{
-			"Nombre":            arreglo_perfil[i]["Nombre"],
-			"Apellido":          arreglo_perfil[i]["Apellido"],
-			"FNacimiento":       arreglo_perfil[i]["FechaNacimiento"],
-			"NDocumento":        arreglo_perfil[i]["NDocumento"],
-			"CorreoElectronico": arreglo_perfil[i]["CorreoElectronico"],
-			"IdTipoDocumento":   arreglo_perfil[i]["IdTipoDocumentoTipoDocumento"].(map[string]interface{})["Nombre"],
-			"IdTipoUsuario":     arreglo_perfil[i]["IdRolRol"].(map[string]interface{})["Nombre"],
-			"pais":              arreglo_perfil[i]["Pais"],
-			"departamento":      arreglo_perfil[i]["Departamento"],
-			"ciudad":            arreglo_perfil[i]["Ciudad"],
-		}
-		Perfil_total = append(Perfil_total, Perfil_parcial)
-
-	}
 
 	json_laboral, _ := services.Metodo_get_all("host_api3", "laboral/")
 	json_laboral1, _ := services.ProcessarJson(json_laboral)
 	laboral_json := json_laboral1["usuarios consultados"]
 	arreglo_laboral, _ := services.ConvertInterfaceToSliceMap(laboral_json)
+	fmt.Println(arreglo_laboral)
 	
-	var Perfil_total_laboral []map[string]interface{}
-	
-	nombre := fmt.Sprintf("%v", jsonData["nombre"])
-	apellido := fmt.Sprintf("%v", jsonData["apellido"])
-	jsonData["nombre_completo"] = nombre + " " + apellido
-	
+
+	var arre []map[string]interface{}
 	for i := range arreglo_laboral {
+		id_usuario, _ := arreglo_laboral[i]["IdUsuarios"]
+		id_usuario_string := fmt.Sprintf("%v", id_usuario)
 
-		Perfil_parcial_laboral := map[string]interface{}{
-	   		"cargo": Perfil_parcial_laboral["Cargo"],
-      		"empresa": Perfil_parcial_laboral["Empresa"],
-      		"periodo": "2021 - 2023"
+		enpoint := "Usuarios/" + id_usuario_string
+		final,_ := services.Metodo_getid("host_api2", enpoint)
+		Json_usuario, _ := services.ProcessarJson(final)
+		nombre_usuario := Json_usuario["Consulta de id"].(map[string]interface{})["Nombre"]
 
+		fechaInicio := arreglo_laboral[i]["FechaInicio"]
+		fechaFin := arreglo_laboral[i]["FechaFin"]
+		perido := fmt.Sprintf("%v a %v", fechaInicio, fechaFin)
 
+		arreglo_parcial := map[string]interface{}{
+			"Nombre": nombre_usuario,
+			"Cargo": arreglo_laboral[i]["Cargo"],
+			"Empresa": arreglo_laboral[i]["Empresa"],
+			"Perido": perido,
+			"Telefono": Json_usuario["Consulta de id"].(map[string]interface{})["Telefono"],
+			"Email": Json_usuario["Consulta de id"].(map[string]interface{})["CorreoElectronico"],
 		}
+		arre = append(arre, arreglo_parcial)
+		fmt.Println(arre)
+
+
 	}
-
-	json_academico, _ := services.Metodo_get_all("host_api4", "buscador/")
-	json_academico1, _ := services.ProcessarJson(json_academico)
-	academico_json := json_academico1["usuarios consultados"]
-	arreglo_academico, _ := services.ConvertInterfaceToSliceMap(academico_json)
-
-	c.Data["json"] = map[string]interface{}{"Succes": true, "Status": 200, "Message": "Perfil existosa", "Data": Perfil_total}
+	
+	c.Data["json"] = map[string]interface{}{"Succes": true, "Status": 200, "Message": "Perfil existosa", "Data": arre}
 	c.ServeJSON()
 
 }
+
 
 // Put ...
 // @Title Put
