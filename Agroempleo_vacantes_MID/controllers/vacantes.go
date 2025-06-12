@@ -78,22 +78,19 @@ func (c *VacantesController) GetAll() {
 
 		usuarioID := Arreglo_Map_Vacantes_final[i]["Id_usuarios"]
 		usuarioID_string := fmt.Sprintf("%v", usuarioID)
-		fmt.Println("usuarioID", usuarioID_string)
 
 		endpoint := "Usuarios/"+ usuarioID_string
 	
 
 		final,_ := services.Metodo_getid("host_api2", endpoint)
-		fmt.Println("final",final)
 		Json_usuario, _ := services.ProcessarJson(final)
 		nombre_usuario := Json_usuario["Consulta de id"].(map[string]interface{})["Nombre"]
-		fmt.Println("nombre_usuario",nombre_usuario)
 
-		fmt.Println("valor de json solo", Arreglo_Map_Vacantes_final[i])
 		
 		
 
 		Resultado_parcial := map[string]interface{}{
+			"id":                  Arreglo_Map_Vacantes_final[i]["Id"],
 			"TituloPuesto":        Arreglo_Map_Vacantes_final[i]["TituloPuesto"],
 			"DescripcionTrabajo":  Arreglo_Map_Vacantes_final[i]["DescripcionTrabajo"],
 			"Cargo":               Arreglo_Map_Vacantes_final[i]["Cargo"],

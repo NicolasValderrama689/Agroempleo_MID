@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego"
+	"github.com/sena_2824182/Agroempleo_MID/Agroempleo_vacantes_MID/services"
 )
 
 // PerfilController operations for Perfil
@@ -53,51 +56,32 @@ func (c *PerfilController) GetOne() {
 // @Failure 403
 // @router / [get]
 func (c *PerfilController) GetAll() {
+	json_perfil, _ := services.Metodo_get_all("host_api2", "Usuarios/")
+	json_perfil2, _ := services.ProcessarJson(json_perfil)
+	perfil_json := json_perfil2["Consulta de id"]
+	arreglo_perfil, _ := services.ConvertInterfaceToSliceMap(perfil_json)
+	fmt.Println("hola", arreglo_perfil)
 
-	// json_laboral, _ := services.Metodo_get_all("host_api3", "laboral/")
-	// json_laboral1, _ := services.ProcessarJson(json_laboral)
-	// laboral_json := json_laboral1["usuarios consultados"]
-	// arreglo_laboral, _ := services.ConvertInterfaceToSliceMap(laboral_json)
-	// fmt.Println("hola",arreglo_laboral)
-
-	// json_academico, _ := services.Metodo_get_all("host_api4", "buscador/")
-	// json_academico1, _ := services.ProcessarJson(json_academico)
-	// academico_json := json_academico1["usuarios consultados"]
-	// arreglo_academico, _ := services.ConvertInterfaceToSliceMap(academico_json)
-	// fmt.Println("hola",arreglo_academico)
-
-	// var arre []map[string]interface{}
-	// for i := 0; i < len(arreglo_laboral); i++ { {
-	// 	id_usuario := arreglo_laboral[i]["IdUsuarios"]
-	// 	id_usuario_string := fmt.Sprintf("%v", id_usuario)
-
-	// 	enpoint := "Usuarios/" + id_usuario_string
-	// 	final,_ := services.Metodo_getid("host_api2", enpoint)
-	// 	Json_usuario, _ := services.ProcessarJson(final)
-	// 	nombre_usuario := Json_usuario["Consulta de id"].(map[string]interface{})["Nombre"]
-
-	// 	fechaInicio := arreglo_laboral[i]["FechaInicio"]
-	// 	fechaFin := arreglo_laboral[i]["FechaFin"]
-	// 	perido := fmt.Sprintf("%v a %v", fechaInicio, fechaFin)
-
-	// 	arreglo_parcial := map[string]interface{}{
-	// 		"Nombre": nombre_usuario,
-	// 		"ciudad": Json_usuario["Idciudadtrabajociudad"].(map[string]interface{})["Nombre"],
-	// 		"Email": Json_usuario["Consulta de id"].(map[string]interface{})["CorreoElectronico"],
-	// 		"Telefono": Json_usuario["Consulta de id"].(map[string]interface{})["Telefono"],
-
-	//     	"Cargo":   arreglo_laboral[i]["Cargo"],
-	//     	"Empresa": arreglo_laboral[i]["Empresa"],
-	//     	"Periodo": perido,
-
-	// 	}
-	// 	arre = append(arre, arreglo_parcial)
-
-	// }}
-
-	// c.Data["json"] = map[string]interface{}{"Succes": true, "Status": 200, "Message": "Perfil existosa", "Data": arre}
-	// c.ServeJSON()
-
+	var perfil []map[string]interface{}
+	for i := range arreglo_perfil {
+		perfil_parcial := map[string]interface{}{
+			"Id":                arreglo_perfil[i]["Id"],
+			"Nombre":            arreglo_perfil[i]["Nombre"],
+			"Apellido":          arreglo_perfil[i]["Apellido"],
+			"CorreoElectronico": arreglo_perfil[i]["CorreoElectronico"],
+			"Telefono":          arreglo_perfil[i]["Telefono"],
+			"FechaNacimiento":   arreglo_perfil[i]["FechaNacimiento"],
+			"Ciudad":            arreglo_perfil[i]["Ciudad"],
+			"Departamento":      arreglo_perfil[i]["Departamento"],
+			"Pais":              arreglo_perfil[i]["Pais"],
+			"tipo_documento":    arreglo_perfil[i]["IdTipoDocumentoTipoDocumento"].(map[string]interface{})["Nombre"],
+			"NDocumento":        arreglo_perfil[i]["NDocumento"],
+			"tipo_usuario":      arreglo_perfil[i]["IdRolRol"].(map[string]interface{})["Nombre"],
+		}
+		perfil = append(perfil, perfil_parcial)
+	}
+	c.Data["json"] = map[string]interface{}{"Succes": true, "Consulta de id": perfil}
+	c.ServeJSON()
 }
 
 // Put ...

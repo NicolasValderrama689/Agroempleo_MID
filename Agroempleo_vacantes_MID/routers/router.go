@@ -30,6 +30,16 @@ func init() {
 				&controllers.PerfilController{},
 			),
 		),
+		beego.NSNamespace("/credenciales",
+			beego.NSInclude(
+				&controllers.CredencialesController{},
+			),
+		),
+		beego.NSNamespace("/postulaciones",
+			beego.NSInclude(
+				&controllers.PostulacionesController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
